@@ -1,7 +1,26 @@
-# ct-poc
+# Ember GraphQL examples
 
-This README outlines the details of collaborating on this Ember application.
-A short introduction of this app could easily go here.
+The repository is meant as a proof-of-concept for integrating EmberJs with GraphQL and our intention to use this combination.
+
+## Goals
+
+All API calls should be handles with a miragejs backend.
+
+**Phase 1:** All API calls should be handles with a miragejs backend. The setup should be testable with ember test.
+
+- [ ] Query a list
+- [ ] Query a single record
+- [ ] Query a single record with relationships
+
+**Phase 2:** All API calls should be handles with a miragejs backend. The setup should be testable with ember test.
+- [ ] Mutate a single record
+- [ ] Mutate a single record with relationship
+- [ ] Subscribe to a single record
+- [ ] Subscribe to multiple records
+
+**Phase 3:** Mercure implementation mutating the backend and subscribing to changes in the frontend.  The setup should be testable with ember test.
+
+- [ ] Mutate a single record in the backend and see changes in the frontend 
 
 ## Prerequisites
 
