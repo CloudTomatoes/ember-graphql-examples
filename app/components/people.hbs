@@ -1,0 +1,12 @@
+People:
+
+<ul>
+{{#each this.people as |human|}}
+  <li>
+    <LinkTo @route="person" @model={{human.id}}>
+      {{human.id}}
+      {{human.name}}
+    </LinkTo>
+  </li>
+{{/each}}
+</ul>

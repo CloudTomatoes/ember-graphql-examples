@@ -1,14 +1,5 @@
-type Person {
-  id: ID!
-  firstName: String!
-  lastName: String!
-}
-
-type Query {
-  allPeople: [Person]
-  person(id: ID!): Person
-
-  # Note: `people` can't automatically be resolved if the `sortBy` argument is
-  # supplied to the query. We will need to implement a resolver for this.
-  people(firstName: String, lastName: String, sortBy: String): [Person]
+query human($id: String!) {
+  human(id: $id) {
+    name
+  }
 }
