@@ -1,12 +1,14 @@
+{{#if this.isLoading}}
+  Loading...
+{{else}}
 People:
-
 <ul>
-{{#each this.people as |human|}}
+{{#each this.people as |person|}}
   <li>
-    <LinkTo @route="person" @model={{human.id}}>
-      {{human.id}}
-      {{human.name}}
+    <LinkTo @route="person" @model={{person.id}}>
+      {{person.id}} - {{person.firstName}}, {{person.lastName}}
     </LinkTo>
   </li>
 {{/each}}
 </ul>
+{{/if}}

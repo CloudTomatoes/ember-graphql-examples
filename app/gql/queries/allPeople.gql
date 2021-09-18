@@ -1,7 +1,0 @@
-query {
-  allPeople {
-      id
-      firstName
-      lastName
-    }
-}

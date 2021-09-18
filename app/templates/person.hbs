@@ -1,2 +1,8 @@
 {{page-title "Person"}}
-{{outlet}}
+
+<ul>
+  <li>{{this.model.firstName}}</li>
+  <li>{{this.model.lastName}}</li>
+</ul>
+
+<LinkTo @route="index">Back</LinkTo>
