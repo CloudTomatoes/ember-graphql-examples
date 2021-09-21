@@ -18,6 +18,23 @@ type Person {
   lastName: String!
 }
 
+type User {
+  name: String!
+  links: [Link!]
+  votes: [Vote!]
+}
+
+type Link {
+  url: String!
+  postedBy: User
+  votes: [Vote!]
+}
+
+type Vote {
+  user: User
+  link: Link
+}
+
 type Query {
   allPeople: [Person]
   person(id: ID!): Person

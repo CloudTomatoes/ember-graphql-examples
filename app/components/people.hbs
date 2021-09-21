@@ -1,14 +1,42 @@
+<h3>People</h3>
+
+<LinkTo @route="people.new">Create person</LinkTo>
+
 {{#if this.isLoading}}
-  Loading...
+  <p>Loading...</p>
 {{else}}
-People:
-<ul>
+<table>
+  <tr>
+    <th>ID</th>
+    <th>First name</th>
+    <th>Last name</th>
+    <th>Edit</th>
+    <th>Delete</th>
+  </tr>
 {{#each this.people as |person|}}
-  <li>
-    <LinkTo @route="person" @model={{person.id}}>
-      {{person.id}} - {{person.firstName}}, {{person.lastName}}
-    </LinkTo>
-  </li>
+  <tr>
+    <td>
+      <LinkTo @route="people.person" @model={{person.id}}>
+        {{person.id}}
+      </LinkTo>
+    </td>
+    <td>
+      <LinkTo @route="people.person" @model={{person.id}}>
+        {{person.firstName}}
+      </LinkTo>
+    </td>
+    <td>
+      <LinkTo @route="people.person" @model={{person.id}}>
+        {{person.lastName}}
+      </LinkTo>
+    </td>
+    <td>
+      <button type="button">Edit</button>
+    </td>
+    <td>
+      <button type="button" {{on "click" (fn this.delete person)}}>Delete</button>
+    </td>
+  </tr>
 {{/each}}
-</ul>
+</table>
 {{/if}}

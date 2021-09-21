@@ -1,0 +1,9 @@
+<div>
+  <form class='flex flex-column mt3' {{on 'submit' this.save}}>
+    <Input class='mb2' type='text' placeholder='Firstname' @value={{this.person.firstName}} />
+    <Input class='mb2' type='text' placeholder='Lastname' @value={{this.person.lastName}} />
+    <div class='flex'>
+      {{input type='submit' value='submit'}}
+    </div>
+  </form>
+</div>
