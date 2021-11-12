@@ -1,45 +1,354 @@
-input PersonInput {
-  firstName: String
-  lastName: String
+type Query {
+  user_me(requireVersion: Int): User!
+
+  """ List projects satisfying the specified filter and ordering """
+  project_list(filter: ProjectFilter, ordering: ProjectOrdering, pagination: Pagination): ProjectConnection!
+
+  """ Get details of a single project """
+  project_details(id: ProjectId!, requireVersion: Int): Project
+
+  workspace_list(filter: WorkspaceFilter!): [Workspace!]!
+  workspace_details(name: WorkspaceName!): Workspace!
+
+  mergeRequest_list(filter: MergeRequestFilter!, ordering: MergeRequestOrdering, pagination: Pagination): MergeRequestConnection!
+  mergeRequest_details(id: MergeRequestId!, requireVersion: Int): MergeRequest!
+
+  """ Get the root node for the given workspace and its child nodes, recursively """
+  node_root(workspaceName: WorkspaceName!, nodeTypeFilter: NodeTypeFilter, maximumLevels: Int): Node!
+  """ Get a node and its child nodes, recursively """
+  node_details(workspaceName: WorkspaceName!, id: NodeId!, nodeTypeFilter: NodeTypeFilter, maximumLevels: Int): Node!
 }
 
 type Mutation {
-  createPerson(input: PersonInput!): Person
-  updatePerson(id: ID!, input: PersonInput!): Person
+  """ Authenticates a user by its username and password and returns a new JWT """
+  user_login(username: Username!, password: PlaintextPassword!): JWT!
 
-  # Note: `deletePerson` can't automatically be resolved due to the Boolean
-  # return type. We will need to implement a resolver for this.
-  deletePerson(id: ID!): Boolean
+  """ Sign Up a new user. Returns a JWT authenticating the new user upon success """
+  user_signUp(username: Username!, password: PlaintextPassword!, fullName: FullNameInput!, emailAddress: EmailAddress!, preferences: UserPreferencesInput!): JWT!
+
+  user_verifyEmailAddress(id: EmailVerificationId!, token: EmailVerificationToken!): Int!
+  user_changeEmailAddress(id: UserId!, newEmailAddress:EmailAddress!): Int!
+
+  """ Create a new project. If not specified, the owner is the authenticated user """
+  project_create(information: ProjectInformationInput!, ownerId: UserId): ProjectId!
+  project_updateInformation(id: ProjectId!, newInformation: ProjectInformationInput!): Int!
+  project_assignOwner(id: ProjectId!, newOwnerId: UserId!): Int!
+  project_addMember(id: ProjectId!, memberId: UserId!, role: ProjectMemberRole!): Int!
+  project_updateMemberRole(id: ProjectId!, memberId: UserId!, newRole: ProjectMemberRole!): Int!
+  project_removeMember(id: ProjectId, memberId: UserId!): Int!
+  project_archive(id: ProjectId!): Int!
+  project_unarchive(id: ProjectId!): Int!
+  project_makePublic(id: ProjectId!): Int!
+  project_makePrivate(id: ProjectId!): Int!
+  project_delete(id: ProjectId!): Boolean!
+
+  """ Create a new user workspace. If not specified, the owner is the authenticated user """
+  workspace_create(projectId: ProjectId!, title: String!, description: String!, ownerId: UserId): WorkspaceName!
+
+  workspace_updateInformation(name:WorkspaceName!, newTitle: String!, newDescription: String!): Boolean!
+  workspace_delete(name:WorkspaceName!): Boolean!
+
+  """ Create a new merge request. If not specified, the creator is the authenticated user """
+  mergeRequest_create(workspaceName: WorkspaceName!, title: String!, description: String!, creatorId: UserId): MergeRequestId!
+  mergeRequest_merge(id: MergeRequestId!): Int!
+  mergeRequest_rebase(id: MergeRequestId!): Int!
+  mergeRequest_close(id: MergeRequestId!): Int!
+
+  """ Add a node on the root-level within the specified workspace """
+  node_addRoot(workspaceName: WorkspaceName!, typeName: NodeTypeName!, properties: NodeProperties): NodeId!
+  """ Add a child node at a specified position within the given workspace """
+  node_add(workspaceName: WorkspaceName!, parentNodeId: NodeId!, typeName: NodeTypeName!, properties: NodeProperties): NodeId!
 }
 
-type Person {
+### PROJECT MANAGEMENT ###
+
+""" Unique id of a project in the system """
+scalar ProjectId
+
+""" Details about a project in the system """
+type Project {
   id: ID!
+  information: ProjectInformation!
+  ownerId: UserId!
+  private: Boolean!
+  archived: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+""" The archive state of a project, only unarchived projects are active """
+enum ProjectArchiveState {
+  archived
+  unarchived
+}
+
+""" The public state of a project """
+enum ProjectPublicState {
+  private
+  public
+}
+
+""" Ordering column for project queries, see `ProjectOrdering` """
+enum ProjectOrderingColumn {
+  created_at
+  updated_at
+  name
+}
+
+""" Project member role + **owner** to be used in project filters, see `ProjectMemberRole` """
+enum ProjectAssigneeFilterRole {
+  owner
+  maintainer
+  staff
+  observer
+}
+
+""" The role of a project member """
+enum ProjectMemberRole {
+  maintainer
+  staff
+  observer
+}
+
+""" Filter to find projects based on their state and memberships """
+input ProjectFilter {
+  archiveState: ProjectArchiveState
+  publicState: ProjectPublicState
+  assignee: ProjectAssigneeFilter
+}
+
+""" Filter to find projects based on their membership roles """
+input ProjectAssigneeFilter {
+  """ id of the project asignee / owner """
+  id: UserId!
+  """ If specified, only assignees with the specified role are considered """
+  roles: [ProjectAssigneeFilterRole!]
+}
+
+""" Sorting of projects in list results """
+input ProjectOrdering {
+  column: ProjectOrderingColumn
+  descending: Boolean
+}
+
+""" Generic information about a project """
+type ProjectInformation {
+  name: String!
+  description: String!
+  avatarUrl: Url
+}
+
+input ProjectInformationInput {
+  name: String!
+  description: String!
+  avatarUrl: Url
+}
+
+""" Relay Cursor Connection for projects, see https://relay.dev/graphql/connections.htm """
+type ProjectConnection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [ProjectEdge]
+}
+
+""" One edge in a project Relay Cursor Connection, see https://relay.dev/graphql/connections.htm """
+type ProjectEdge {
+  node: Project
+  cursor: Cursor!
+}
+
+
+### USER ADMINISTRATION ###
+
+type User {
+  id: UserId!
+  name: FullName!
+  emailAddress: EmailAddress!
+  emailAddressVerified: Boolean!
+  preferences: UserPreferences!
+  remainingSeats: Int!
+  invitedBy: UserId
+  version: Int!
+}
+
+""" Unique id of a user in the system """
+scalar UserId
+
+""" Full name of a user """
+input FullNameInput {
   firstName: String!
   lastName: String!
 }
 
-type User {
-  name: String!
-  links: [Link!]
-  votes: [Vote!]
+type FullName {
+  firstName: String!
+  lastName: String!
 }
 
-type Link {
-  url: String!
-  postedBy: User
-  votes: [Vote!]
+""" Preferences of a user """
+input UserPreferencesInput {
+  language: Language!
+  timeZone: TimeZone!
 }
 
-type Vote {
-  user: User
-  link: Link
+type UserPreferences {
+  language: Language!
+  timeZone: TimeZone!
 }
 
-type Query {
-  allPeople: [Person]
-  person(id: ID!): Person
 
-  # Note: `people` can't automatically be resolved if the `sortBy` argument is
-  # supplied to the query. We will need to implement a resolver for this.
-  people(firstName: String, lastName: String, sortBy: String): [Person]
+""" Username of a user in the system """
+scalar Username
+""" The plaintext password of a user. This is only used for mutations and will never be stored as is """
+scalar PlaintextPassword
+
+scalar EmailVerificationId
+scalar EmailVerificationToken
+
+
+### WORKSPACE MANAGEMENT ###
+
+scalar WorkspaceName
+scalar MergeRequestId
+scalar ResourceTypeId
+
+type Workspace {
+  workspaceName: WorkspaceName!
+  baseWorkspaceName: WorkspaceName!
+  workspaceTitle: String!
+  workspaceDescription: String!
+  workspaceOwner: UserId
+}
+
+input WorkspaceFilter {
+  projectId: ProjectId!
+  ownerId: UserId
+}
+
+type MergeRequest {
+  id: MergeRequestId!
+  title: String!
+  description: String!
+  sourceWorkspaceName: WorkspaceName!
+  targetWorkspaceName: WorkspaceName!
+  state: MergeRequestState!
+}
+
+enum MergeRequestState {
+  open
+  merging
+  outdated
+  rebasing
+  failed
+  closed
+  merged
+}
+
+input MergeRequestFilter {
+  creatorId: UserId
+  state: MergeRequestState
+}
+
+input MergeRequestOrdering {
+  column: MergeRequestOrderingColumn
+  descending: Boolean
+}
+
+enum MergeRequestOrderingColumn {
+  created_at
+  updated_at
+  title
+}
+
+type MergeRequestConnection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [MergeRequestEdge]
+}
+
+""" One edge in a merge request Relay Cursor Connection, see https://relay.dev/graphql/connections.htm """
+type MergeRequestEdge {
+  node: MergeRequest
+  cursor: Cursor!
+}
+
+enum CloudProviderType {
+  AWS
+  Azure
+  GoogleCloud
+}
+
+### RESOURCE MANAGEMENT ###
+
+""" Unique identifier of a node aggregate """
+scalar NodeId
+
+""" The node type name of a Content Repository node, e.g. "Azure.NodeTypes:AppPlatform.Spring" """
+scalar NodeTypeName
+
+""" Properties of a node in JSON format """
+scalar NodeProperties
+
+""" Comma separated list of node types to include/exclude (e.g. "Some.Node:Type.To.Include, !Some.Node:Type.To.Exclude, ...") """
+scalar NodeTypeFilter
+
+type Node {
+  id: NodeId!
+  typeName: NodeTypeName!
+  properties: NodeProperties!
+  childNodes: [Node!]!
+}
+
+### Pagination ###
+
+""" Input type for a Relay Cursor Connections Pagination, see https://relay.dev/graphql/connections.htm """
+input Pagination {
+  """ If specified, the first X results will be returned. Can't be combined with "last" """
+  first: Int
+  """ If specified, only results after the specified cursor are returned """
+  after: Cursor
+  """ If specified, the last X results will be returned. Can't be combined with "first" """
+  last: Int
+  """ If specified, only results before the specified cursor are returned """
+  before: Cursor
+}
+
+""" Page information for a Relay Cursor Connection page, used to create pagination navigations """
+type PageInfo {
+  """ Whether a next page exists with after = endCursor """
+  hasNextPage: Boolean!
+  """ Whether a previous page exists with before = startCursor """
+  hasPreviousPage: Boolean!
+  """ First cursor of the paginated result """
+  startCursor: Cursor
+  """ Last cursor of the paginated result """
+  endCursor: Cursor
+}
+
+""" An opaque cursor used for the Relay Cursor Connections Pagination, see https://relay.dev/graphql/connections.htm """
+scalar Cursor
+
+
+### SHARED TYPES ###
+
+""" An absolute or relative URL to any internal or external resource """
+scalar Url
+""" ISO8601 encoded timestamp, for example "2021-07-21 10:07:02.000000" """
+scalar DateTime
+""" A valid time zone, for example "Europe/Amsterdam". See https://www.php.net/manual/en/timezones.php """
+scalar TimeZone
+""" An email address following the RFC 5322 specification """
+scalar EmailAddress
+""" A JSON Web Token, see https://jwt.io/ """
+scalar JWT
+
+""" Supported languages in the system, used for example in `UserPreferencesInput` """
+enum Language {
+  en
+  nl
+}
+
+schema {
+  query: Query
+  mutation: Mutation
 }
