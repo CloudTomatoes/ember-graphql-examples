@@ -32,15 +32,13 @@ export default class PeopleComponent extends Component {
 
   @action
   delete(person) {
-    console.log(person);
     let variables = {
       id: person.id,
     };
-
-    let result = {};
     this.apollo
-      .mutate({ mutate: deletePerson, variables: variables }, result)
+      .mutate({ mutation: deletePerson, variables: variables })
       .then((result) => {
+        this.people= this.people.filter(item=>item.id!=person.id)
         console.log(result);
       });
   }

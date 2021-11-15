@@ -31,7 +31,7 @@
       </LinkTo>
     </td>
     <td>
-      <button type="button">Edit</button>
+      <LinkTo @route="people.person.edit" @tagName="button" @model={{person.id}}>Edit</LinkTo>
     </td>
     <td>
       <button type="button" {{on "click" (fn this.delete person)}}>Delete</button>

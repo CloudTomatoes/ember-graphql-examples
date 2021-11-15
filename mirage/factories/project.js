@@ -1,7 +1,30 @@
-import { Factory } from 'ember-cli-mirage';
+import { Factory, schema } from 'ember-cli-mirage';
+import faker from 'faker';
 
 export default Factory.extend({
-  name: 'This is a fantastic project coming from ember-cli-mirage',
-  date: 'October 8, 2021',
-  source: 'http://test-source',
+  id(i) {
+    return i;
+  },
+  ownerId: 1,
+  private() {
+    return faker.datatype.boolean();
+  },
+  archived() {
+    return faker.datatype.boolean();
+  },
+  createdAt() {
+    return faker.date.past();
+  },
+  updatedAt() {
+    return faker.date.past();
+  },
+  afterCreate(post, server) {
+    post.update({
+      information: server.create('project-information', {
+        name: faker.commerce.productName(),
+        description: faker.commerce.productDescription(),
+        avatarUrl: faker.image.imageUrl(),
+      }),
+    });
+  },
 });
