@@ -1,0 +1,30 @@
+{{page-title "Index"}}
+{{log 'model' this.model.edges}}
+<table>
+  <tr>
+    <th>ID</th>
+    <th>Product name</th>
+    <th>Description</th>
+    {{!-- <th>Edit</th>
+    <th>Delete</th> --}}
+  </tr>
+{{#each this.model.edges as |proj|}}
+  <tr>
+    <td>
+      {{proj.node.id}}
+    </td>
+    <td>
+      {{proj.node.information.name}}
+    </td>
+    <td>
+      {{proj.node.information.description}}
+    </td>
+    {{!-- <td>
+      <LinkTo @route="people.person.edit" @tagName="button" @model={{person.id}}>Edit</LinkTo>
+    </td>
+    <td>
+      <button type="button" {{on "click" (fn this.delete person)}}>Delete</button>
+    </td> --}}
+  </tr>
+{{/each}}
+</table>

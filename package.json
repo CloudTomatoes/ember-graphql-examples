@@ -74,6 +74,7 @@
     "edition": "octane"
   },
   "dependencies": {
+    "faker": "^5.5.3",
     "lodash": "^4.17.21"
   }
 }

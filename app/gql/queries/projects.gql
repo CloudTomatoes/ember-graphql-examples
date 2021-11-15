@@ -1,0 +1,27 @@
+query Projects {
+  project_list {
+    totalCount
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+    }
+    edges {
+      node{
+        id
+        information{
+          name
+          description
+          avatarUrl
+        }
+        ownerId
+        private
+        archived
+        createdAt
+        updatedAt
+      }
+      cursor
+    }
+  }
+}
